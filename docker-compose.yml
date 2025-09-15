@@ -1,0 +1,111 @@
+version: "3.8"
+
+services:
+
+  master:
+    image: bitnami/spark:3.5.6
+    user: root
+    hostname: spark-master
+    environment:
+      SPARK_WORKER_DIR: /opt/spark-app/application/tmp
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY}
+      SPARK_EXECUTOR_MEMORY: ${SPARK_EXECUTOR_MEMORY}
+      SPARK_EXECUTOR_CORES: ${SPARK_EXECUTOR_CORES}
+    ports:
+      - "${SPARK_UI_PORT}:8080"
+      - "7077:7077"
+    volumes:
+      - spark-app:/opt/spark-app/application/app
+      - spark-tmp:/opt/spark-app/application/tmp
+      - spark-data:/opt/spark-app/application/data
+      - spark-logs:/opt/spark-app/application/logs
+    networks:
+      - spark-net
+
+  worker:
+    image: bitnami/spark:3.5.6
+    user: root
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_DIR: /opt/spark-app/application/tmp
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: ${WORKER_MEMORY}
+      SPARK_WORKER_CORES: ${WORKER_CPUS}
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+      SPARK_EXECUTOR_CORES: ${SPARK_EXECUTOR_CORES}
+
+    depends_on:
+      - master
+    volumes:
+      - spark-app:/opt/spark-app/application/app
+      - spark-tmp:/opt/spark-app/application/tmp
+      - spark-data:/opt/spark-app/application/data
+      - spark-logs:/opt/spark-app/application/logs
+    networks:
+      - spark-net
+    deploy:
+      replicas: 2
+
+  app:
+    build: .
+    image: spark-driver-app
+    environment:
+      SPARK_WORKER_DIR: /opt/spark-app/application/tmp
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY}
+      SPARK_EXECUTOR_MEMORY: ${SPARK_EXECUTOR_MEMORY}
+      HOME: /opt/spark
+      SPARK_SUBMIT_OPTIONS: "--conf spark.jars.ivy=/opt/spark/.ivy2"
+      SPARK_EXECUTOR_CORES: ${SPARK_EXECUTOR_CORES}
+    depends_on:
+      - master
+      - worker
+    volumes:
+      - spark-app:/opt/spark-app/application/app
+      - spark-tmp:/opt/spark-app/application/tmp
+      - spark-data:/opt/spark-app/application/data
+      - spark-logs:/opt/spark-app/application/logs
+      # spark-submit --master spark://spark-master:7077  --conf spark.local.dir=/opt/spark-app/application/tmp --deploy-mode client /opt/spark-app/application/app/main.py      
+    networks:
+      - spark-net
+    restart: "no"
+
+networks:
+  spark-net:
+    driver: bridge
+
+volumes:
+  spark-app:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/naouar/Documents/Spark/application/app
+  spark-tmp:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/naouar/Documents/Spark/application/tmp
+  
+  spark-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/naouar/Documents/Spark/application/data
+
+  spark-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/naouar/Documents/Spark/application/logs
