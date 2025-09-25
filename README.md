@@ -2,7 +2,7 @@
 This project is a Spark application designed to test how Spark work on large datasets in a distributed environment.
 It runs inside a Docker-based Spark cluster (using Bitnami Spark images), making it easy to scale and reproduce.
 
-##" 📂 Project Structure
+## 📂 Project Structure
 ```plaintext
 .
 ├── application/
