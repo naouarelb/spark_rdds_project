@@ -1,8 +1,8 @@
-# 🚀 Spark Data Processing Project
+## 🚀 Spark Data Processing Project
 This project is a Spark application designed to test how Spark work on large datasets in a distributed environment.
 It runs inside a Docker-based Spark cluster (using Bitnami Spark images), making it easy to scale and reproduce.
 
-# 📂 Project Structure
+##" 📂 Project Structure
 ```plaintext
 .
 ├── application/
@@ -30,7 +30,7 @@ It runs inside a Docker-based Spark cluster (using Bitnami Spark images), making
 └── README.md                       # Project-level documentation (setup, run instructions)
 ```
 
-# ⚙️ Requirements
+## ⚙️ Requirements
 
 - Docker version 28.4.0
 - docker-compose version 1.29.2
